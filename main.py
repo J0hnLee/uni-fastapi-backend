@@ -1,11 +1,15 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Union
-from redis_om import get_redis_connection
+from redis_om import get_redis_connection, HashModel
+from pydantic import BaseModel
+
 # import sys
 # print(sys.path)
 
 from dotenv import load_dotenv
 import os
+
 # 加载 .env 文件中的环境变量
 load_dotenv()
 
@@ -17,12 +21,27 @@ secret_key = os.getenv("REDIS_PUBLIC_ENDPOINT_SECURITY_KEY")
 # 在这里使用您的环境变量
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:3000'],
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 redis = get_redis_connection(
     host=redis_host,
     port=redis_api_port,
     password=secret_key,
     decode_responses=True
 )
+
+
+class Product(HashModel):
+    name: str
+    price: float
+    quantity: int
+
+    class Meta:
+        database = redis
 
 
 @app.get("/")
@@ -33,3 +52,15 @@ def read_root():
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
+
+
+@app.get("/products")
+def all():
+    return Product.all_pks()
+
+# HashModel is not supported by the latest version of Pydantic.
+
+
+@app.post('/products')
+def create(product: Product):
+    return product.save()
