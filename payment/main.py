@@ -6,6 +6,7 @@ from starlette.requests import Request
 import requests
 from model import Order
 import time
+from model import redis
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -17,7 +18,9 @@ app.add_middleware(
 
 @app.get("/orders/{pk}")
 def get(pk: str):
-    return Order.get(pk)
+    order = Order.get(pk)
+    redis.xadd("refund_order", order.dict(), "*")
+    return order
 
 
 @app.post("/orders")
@@ -46,3 +49,4 @@ def order_completed(order: Order):
     time.sleep(10)
     order.status = "Completed"
     order.save()
+    redis.xadd("order_completed", order.dict(), "*")
