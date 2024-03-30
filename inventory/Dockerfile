@@ -10,8 +10,13 @@ COPY ./requirements.txt /code/requirements.txt
 # 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
+
 # 
 COPY . /code
+
+# 将主机上的代码目录挂载到容器内的 /code 目录
+VOLUME ./:/code
+EXPOSE 8000
 RUN chmod +x start.sh
 
 # 
