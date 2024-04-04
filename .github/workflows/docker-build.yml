@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository code
-        uses: action/checkout@v2
+        uses: actions/checkout@v2
       - name: docker image build
         run: docker build build -t J0hnLee/inventory:latest ./inventory
       - name: docker image list
