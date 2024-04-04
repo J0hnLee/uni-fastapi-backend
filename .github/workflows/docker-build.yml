@@ -9,6 +9,6 @@ jobs:
       - name: Checkout repository code
         uses: actions/checkout@v2
       - name: docker image build
-        run: docker build -t J0hnLee/inventory:latest ./inventory
+        run: docker build -t j0hnlee/inventory:latest ./inventory
       - name: docker image list
         run: docker image ls
