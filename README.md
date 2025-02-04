@@ -11,3 +11,4 @@
 ## push
 ```docker push 12cloud/unifastapibackend:latest```
 
+# 當無法連線時調整VPC的組態(security group)
