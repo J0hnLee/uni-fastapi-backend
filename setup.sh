@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# 檢查是否提供了參數
+if [ $# -lt 2 ]; then
+  echo "用法: $0 參數1 參數2"
+  exit 1
+fi
+
+
+
 # 檢查是否已經有 SQL Server 2022 的 Docker 鏡像
 if ! docker images mcr.microsoft.com/mssql/server:2022-latest --quiet | grep -q .; then
     echo "正在下載 SQL Server 2022 Docker 鏡像..."
@@ -15,9 +23,10 @@ else
     echo "SQL Server 2022 Docker 鏡像已存在，無需下載"
 fi
 
+# TODO: check container 是否存在，如果存在就啟動，如果不存在就重起一個
 echo "正在啟動 SQL Server 2022 Docker 容器..."
 if [ ! "$(docker ps -q -f name=sqlserver-clone)" ]; then
-    if docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=12345678abd*" -e "MSSQL_PID=Developer" -p 1433:1433 --name sqlserver-clone -d mcr.microsoft.com/mssql/server:2022-latest; then
+    if docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=12345678abd*" -e "MSSQL_PID=Developer" -p 1433:1433 --name sqlserver-clone --restart always -d mcr.microsoft.com/mssql/server:2022-latest; then
         echo "SQL Server 2022 Docker 容器啟動成功"
     else
         echo "錯誤：SQL Server 2022 Docker 容器啟動失敗"
@@ -26,6 +35,8 @@ if [ ! "$(docker ps -q -f name=sqlserver-clone)" ]; then
     fi
 else
     echo "SQL Server 2022 Docker 容器已經在運行中，無需重新啟動"
+    docker restart sqlserver-clone
+
 fi
 
 echo "正在檢查備份目錄是否存在..."
@@ -34,6 +45,7 @@ if ! docker exec sqlserver-clone test -d /var/opt/mssql/backup; then
     docker exec -it sqlserver-clone mkdir -p /var/opt/mssql/backup
 fi
 
+# TODO: check SJDB.bak 是否已經在目標資料夾
 echo "正在建立 SQL Server 2022 容器的備份..."
 echo "正在將備份檔案SJDB從本機複製到 SQL Server 2022 容器..."
 docker cp /Volumes/home/Drive/SJDB.bak sqlserver-clone:/var/opt/mssql/backup/SJDB.bak
