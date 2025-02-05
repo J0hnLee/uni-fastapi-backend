@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 檢查是否提供了參數
+# TODO:檢查是否提供了參數
 if [ $# -lt 2 ]; then
   echo "用法: $0 參數1 參數2"
   exit 1
